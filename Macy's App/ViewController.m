@@ -15,11 +15,16 @@
 // Holds the meanings returned by the web API
 @property (nonatomic, strong)  NSMutableArray *meanings;
 
+
 @end
 
 @implementation ViewController
 
+// property setter
 - (void)setMeanings:(NSMutableArray *)meanings{
+    
+    // update the property
+    _meanings = meanings;
     
     // every time  this array changes,
     // reflect that on the tableview
@@ -49,7 +54,7 @@
 #pragma mark - UITableViewDataSource
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    return 0;
+    return self.meanings.count;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
@@ -59,13 +64,18 @@
     
     
     // adjust cell
-    
+    cell.textLabel.text = [[self.meanings objectAtIndex:indexPath.row] objectForKey:@"lf"];
     
     
     return cell;
 }
 
 #pragma mark - UITableViewDelegate
+
+// to make things prettier, we'll disable selection (well, sort of )
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
+}
 
 
 #pragma mark -  UITextFieldDelegate
@@ -76,22 +86,41 @@
 // result in self.meanings
 - (void)getMeaningsForAcronym: (NSString *)acronym {
     
+    // show the progress hud
+    [MBProgressHUD showHUDAddedTo:self.view animated:YES];
+    
     // call acronyms API asynchronously, taken from Documentation on github
     AFHTTPRequestOperationManager *manager = [AFHTTPRequestOperationManager manager];
+    
+    // add some acceptable response types. It will error if you don't add this line
+    manager.responseSerializer.acceptableContentTypes = [manager.responseSerializer.acceptableContentTypes setByAddingObject:@"text/plain"];
+    
     NSDictionary *parameters = @{@"sf": acronym};
     [manager GET:@"http://www.nactem.ac.uk/software/acromine/dictionary.py" parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
         
         // log result
         NSLog(@"JSON: %@", responseObject);
         
-        //
+        // here's the structure
+        // lfs -> array of dictionaries
+        // lf = name, also list of vars
+        // could create structures but for now, just query the raw results
+        self.meanings = [[(NSArray*)responseObject firstObject] objectForKey:@"lfs"];
         
         // show the tableview
-        self.tableView.hidden = YES;
+        self.tableView.hidden = NO;
         
+        
+        // hide the progress hud
+        [MBProgressHUD hideAllHUDsForView:self.view animated:YES];
         
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"Error: %@", error);
+        
+        
+        
+        // hide the hud
+        [MBProgressHUD hideAllHUDsForView:self.view animated:YES];
     }];
 }
 
