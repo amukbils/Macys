@@ -127,7 +127,7 @@
 - (IBAction)searchButtonPressed:(id)sender {
     
     // hide the keyboard
-    [sel.textField resignFirstResponder];
+    [self.textField resignFirstResponder];
     
     // get the data
     [self getMeaningsForAcronym:self.textField.text];
