@@ -77,9 +77,6 @@
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 
-
-#pragma mark -  UITextFieldDelegate
-
 #pragma mark - Generic Methods
 
 // calls the acronym API using AFNetworking. Puts the
@@ -117,7 +114,8 @@
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"Error: %@", error);
         
-        
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Uh-oh!" message:@"We were not able to download teh data" delegate:nil cancelButtonTitle:@"Oh Well" otherButtonTitles:nil, nil];
+        [alert show];
         
         // hide the hud
         [MBProgressHUD hideAllHUDsForView:self.view animated:YES];
